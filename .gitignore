@@ -1,0 +1,34 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Environment / secrets
+.env
+
+# Output data
+data/
+00_Archive
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyc
+*.pyd
+.Python
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/

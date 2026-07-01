@@ -1,0 +1,23 @@
+{
+  "_comment": "CORDIS extraction configuration. Edit query and summary_fields as needed.",
+  "query": "contenttype='project' AND relations/associations/programme/code='HORIZON.1.1','H2020-EU.1.1.','FP7-IDEAS-ERC' AND region/nutsCode=='DE1'",
+  "output_prefix": "data/heidelberg_erc",
+  "summary_fields": [
+    "id",
+    "acronym",
+    "title",
+    "teaser",
+    "objective",
+    "totalCost",
+    "startDate",
+    "endDate",
+    "duration",
+    "status",
+    "grantDoi",
+    "coordinator_name",
+    "coordinator_shortName",
+    "topic_code",
+    "call_identifier",
+    "fundingScheme"
+  ]
+}
