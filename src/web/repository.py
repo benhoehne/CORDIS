@@ -47,7 +47,7 @@ class ProjectFilters:
     year_to: int | None = None           # <year_field> <= year_to
     year_field: str = "start_year"       # which year column the range applies to
     programme: str | None = None         # matches label / code / framework / call
-    programme_label: str | None = None   # exact human-readable programme (dropdown)
+    programme_labels: list[str] = field(default_factory=list)  # multi-select human-readable labels
     institution: str | None = None       # UHEI | UKHD | UHEI+UKHD
     pi: str | None = None                # ERC researcher (substring)
     panel: str | None = None             # ERC panel (substring)
@@ -57,32 +57,45 @@ class ProjectFilters:
     @classmethod
     def from_query_params(cls, params: dict) -> "ProjectFilters":
         """Build filters from raw query-string values (all strings)."""
-        def _int(v):
+        def _int(key: str) -> int | None:
+            v = (params.get(key) or "").strip()
             try:
-                return int(v) if v not in (None, "") else None
+                return int(v) if v else None
             except (ValueError, TypeError):
                 return None
 
-        def _str(v):
-            v = (v or "").strip()
+        def _str(key: str) -> str | None:
+            v = (params.get(key) or "").strip()
             return v or None
 
+        def _getlist(key: str) -> list[str]:
+            """Return a list of non-empty values for *key*.
+
+            Works with Starlette ``QueryParams`` (has ``.getlist()``) and with
+            plain ``dict``s (falls back to comma-splitting a single value so
+            the filter stays usable from plain HTTP calls).
+            """
+            if hasattr(params, "getlist"):
+                return [s.strip() for s in params.getlist(key) if s.strip()]
+            raw = (params.get(key) or "").strip()
+            return [s.strip() for s in raw.split(",") if s.strip()] if raw else []
+
         # Only allow the two year columns we index; default to start_year.
-        yf = _str(params.get("year_field"))
+        yf = _str("year_field")
         year_field = yf if yf in ("start_year", "call_year") else "start_year"
 
         return cls(
-            q=_str(params.get("q")),
-            year_from=_int(params.get("year_from")),
-            year_to=_int(params.get("year_to")),
+            q=_str("q"),
+            year_from=_int("year_from"),
+            year_to=_int("year_to"),
             year_field=year_field,
-            programme=_str(params.get("programme")),
-            programme_label=_str(params.get("programme_label")),
-            institution=_str(params.get("institution")),
-            pi=_str(params.get("pi")),
-            panel=_str(params.get("panel")),
+            programme=_str("programme"),
+            programme_labels=_getlist("programme_label"),
+            institution=_str("institution"),
+            pi=_str("pi"),
+            panel=_str("panel"),
             erc_only=str(params.get("erc_only", "")).lower() in ("1", "true", "yes", "on"),
-            status=_str(params.get("status")),
+            status=_str("status"),
         )
 
 
@@ -114,10 +127,11 @@ def build_where(f: ProjectFilters) -> tuple[str, list]:
         clauses.append(f"{year_col} <= ?")
         params.append(f.year_to)
 
-    if f.programme_label:
-        # Exact human-readable programme (dropdown selection).
-        clauses.append("programme_label = ?")
-        params.append(f.programme_label)
+    if f.programme_labels:
+        # One or more human-readable programme labels (multi-select dropdown).
+        placeholders = ", ".join("?" * len(f.programme_labels))
+        clauses.append(f"programme_label IN ({placeholders})")
+        params.extend(f.programme_labels)
 
     if f.programme:
         # Free-text programme filter: match the human-readable label, the raw

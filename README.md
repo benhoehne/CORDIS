@@ -11,8 +11,20 @@ Beyond the API extraction described below, this repo now includes a full
 projects of Universität Heidelberg (UHEI) and Universitätsklinikum Heidelberg
 (UKHD), combining the CORDIS export with the ERC dashboard dump.
 
+On macOS/Linux:
+```bash
+source .venv/bin/activate
+```
+
+On Windows:
+```bash
+.\venv\Scripts\activate
+```
+
+
 ```bash
 pip install -r requirements.txt
+
 
 python manage.py db build --recreate        # build data/cordis_heidelberg.db
 python manage.py db update  <new_cordis.xlsx>   # idempotent delta update

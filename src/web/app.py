@@ -65,7 +65,8 @@ def api_projects(
     direction: str = "desc",
 ):
     """Return a filtered, paginated page of projects as JSON."""
-    filters = ProjectFilters.from_query_params(dict(request.query_params))
+    # Pass the raw QueryParams object so multi-value programme_label is preserved.
+    filters = ProjectFilters.from_query_params(request.query_params)
     return query_projects(
         filters, page=page, page_size=page_size, sort=sort, direction=direction
     )
@@ -109,7 +110,7 @@ def api_export(request: Request):
     Build an Excel export of the currently filtered subset and return it as a
     download. The same query-string filters as ``/api/projects`` apply.
     """
-    filters = ProjectFilters.from_query_params(dict(request.query_params))
+    filters = ProjectFilters.from_query_params(request.query_params)
     path = export_filtered(filters)
     return FileResponse(
         path,
