@@ -12,6 +12,12 @@ const money = (v) => v == null ? "" :
 const esc = (s) => (s == null ? "" : String(s)
   .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"));
 
+// Returns the right colour chip for a given institution abbreviation.
+const INST_CHIP = { UHEI: "chip-inst-uhei", UKHD: "chip-inst-ukhd" };
+const instChip = (inst) => inst
+  ? `<span class="${INST_CHIP[inst] || "chip-inst"}">${esc(inst)}</span>`
+  : "";
+
 // ── Multi-select dropdown ─────────────────────────────────────────────────────
 const progState = { selected: new Set(), allOptions: [] };
 
@@ -225,10 +231,7 @@ function render(data) {
       <td class="px-3 py-2 text-sm align-top">${p.id}</td>
       <td class="px-3 py-2 text-sm align-top font-semibold">${esc(p.acronym)}</td>
       <td class="px-3 py-2 text-sm align-top">${esc((p.title || "").slice(0, 90))}</td>
-      <td class="px-3 py-2 text-sm align-top">${p.institution
-        ? `<span class="chip-inst">${esc(p.institution)}</span>` : ""}</td>
-      <td class="px-3 py-2 text-sm align-top">${p.is_erc
-        ? `<span class="chip-erc">ERC</span>` : ""}</td>
+      <td class="px-3 py-2 text-sm align-top">${instChip(p.institution)}</td>
       <td class="px-3 py-2 text-sm align-top">${p.start_year ?? ""}</td>
       <td class="px-3 py-2 text-sm align-top">${p.call_year ?? ""}</td>
       <td class="px-3 py-2 text-sm align-top" title="${esc(p.programme_code || "")}">

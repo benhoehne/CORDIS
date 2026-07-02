@@ -12,8 +12,10 @@
   </script>
   <style type="text/tailwindcss">
     @layer utilities {
-      .chip-erc  { @apply inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-uhei; }
-      .chip-inst { @apply inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700; }
+      .chip-erc       { @apply inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-uhei; }
+      .chip-inst      { @apply inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600; }
+      .chip-inst-uhei { @apply inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-uhei; }
+      .chip-inst-ukhd { @apply inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-violet-100 text-violet-700; }
     }
   </style>
   <!-- build_standalone.py injects sql.js + SheetJS CDN scripts here for the static build -->
@@ -100,7 +102,6 @@
           </div>
         </div>
         <select id="f-programme-label" multiple class="hidden"></select>
-        <p class="text-xs text-gray-400 mt-1">Nothing selected = all programmes</p>
       </div>
 
       <!-- Call / code -->
@@ -188,7 +189,7 @@
             <th onclick="setSort('acronym')"             class="text-left text-xs text-gray-500 px-3 py-2.5 border-b border-gray-200 whitespace-nowrap cursor-pointer hover:text-gray-800 select-none">Acronym</th>
             <th                                          class="text-left text-xs text-gray-500 px-3 py-2.5 border-b border-gray-200 whitespace-nowrap select-none">Title</th>
             <th                                          class="text-left text-xs text-gray-500 px-3 py-2.5 border-b border-gray-200 whitespace-nowrap select-none">Inst.</th>
-            <th                                          class="text-left text-xs text-gray-500 px-3 py-2.5 border-b border-gray-200 whitespace-nowrap select-none">ERC</th>
+            <th                                          class="text-left text-xs text-gray-500 px-3 py-2.5 border-b border-gray-200 whitespace-nowrap select-none hidden">ERC</th>
             <th onclick="setSort('start_year')"          class="text-left text-xs text-gray-500 px-3 py-2.5 border-b border-gray-200 whitespace-nowrap cursor-pointer hover:text-gray-800 select-none">Start</th>
             <th onclick="setSort('call_year')"           class="text-left text-xs text-gray-500 px-3 py-2.5 border-b border-gray-200 whitespace-nowrap cursor-pointer hover:text-gray-800 select-none">Call yr</th>
             <th                                          class="text-left text-xs text-gray-500 px-3 py-2.5 border-b border-gray-200 whitespace-nowrap select-none">Programme</th>
@@ -219,7 +220,7 @@
   <!-- ── Detail modal ──────────────────────────────────────────────────── -->
   <div class="fixed inset-0 bg-black/40 hidden items-start justify-center px-4 pt-10 pb-4 overflow-auto z-50"
     id="overlay" onclick="if(event.target===this)closeDetail()">
-    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl">
+    <div class="bg-white rounded-2xl max-w-[960px] w-full p-6 shadow-2xl">
       <button onclick="closeDetail()"
         class="float-right bg-gray-100 text-gray-700 rounded-lg px-3 py-1.5 text-sm font-semibold hover:bg-gray-200">
         Close ✕
