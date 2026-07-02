@@ -1,0 +1,83 @@
+name: Deploy to GitHub Pages
+
+# Regenerates standalone.html and updates index.html + app-standalone.js on
+# gh-pages whenever the HTML template or standalone JS changes on main.
+#
+# Prerequisites (first-time setup):
+#   Run `./deploy_github_pages.sh` locally first.
+#   That creates the gh-pages branch and uploads the database file.
+#   Then enable Pages in: Settings → Pages → Branch: gh-pages / root.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/web/static/index.html"        # HTML/CSS template
+      - "src/web/static/app-standalone.js" # standalone JS
+      - "build_standalone.py"              # build script itself
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy-html:
+    name: Rebuild standalone.html and update gh-pages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Generate standalone.html
+        run: python build_standalone.py
+
+      - name: Configure git identity
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Check gh-pages branch exists
+        id: check-branch
+        run: |
+          if git ls-remote --exit-code origin gh-pages; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::gh-pages branch does not exist."
+            echo "::warning::Run ./deploy_github_pages.sh locally first to create it and upload the database."
+          fi
+
+      - name: Update index.html and app-standalone.js on gh-pages
+        if: steps.check-branch.outputs.exists == 'true'
+        run: |
+          # Stash the generated files before switching branches
+          cp src/web/static/standalone.html  /tmp/index.html
+          cp src/web/static/app-standalone.js /tmp/app-standalone.js
+
+          # Switch to gh-pages (cordis_heidelberg.db is already there)
+          git fetch origin gh-pages
+          git checkout gh-pages
+
+          # Update HTML + JS; leave cordis_heidelberg.db untouched
+          cp /tmp/index.html        index.html
+          cp /tmp/app-standalone.js app-standalone.js
+          touch .nojekyll
+
+          git add index.html app-standalone.js .nojekyll
+
+          if git diff --cached --quiet; then
+            echo "No changes – skipping commit."
+          else
+            SHORT_SHA="${{ github.sha }}"
+            git commit -m "Deploy HTML update from ${SHORT_SHA:0:8}"
+            git push origin gh-pages
+            echo "✅ Deployed: https://benhoehne.github.io/CORDIS/"
+          fi
