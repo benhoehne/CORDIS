@@ -1,7 +1,7 @@
 {
   "_comment": "CORDIS extraction configuration. Edit query and summary_fields as needed.",
-  "query": "contenttype='project' AND relations/associations/programme/code='HORIZON.1.1','H2020-EU.1.1.','FP7-IDEAS-ERC' AND region/nutsCode=='DE1'",
-  "output_prefix": "data/heidelberg_erc",
+  "query": "(relations/associations/organization/legalName='UHEI' OR relations/associations/organization/shortName='UHEI' OR relations/associations/organization/legalName='UKHD' OR relations/associations/organization/shortName='UKHD') AND startDate>=2014-01-01",
+  "output_prefix": "data/cordis_",
   "summary_fields": [
     "id",
     "acronym",
@@ -19,5 +19,7 @@
     "topic_code",
     "call_identifier",
     "fundingScheme"
-  ]
+  ],
+  "query_dn": "/project/relations/associations/relatedMasterCall/call/identifier='*DN*','*ITN*' AND (relations/associations/organization/legalName='UHEI' OR relations/associations/organization/shortName='UHEI' OR relations/associations/organization/legalName='UKHD' OR relations/associations/organization/shortName='UKHD')",
+  "query_erc": "/project/relations/associations/relatedMasterCall/call/identifier='ERC-*' AND (relations/associations/organization/legalName='UHEI' OR relations/associations/organization/shortName='UHEI' OR relations/associations/organization/legalName='UKHD' OR relations/associations/organization/shortName='UKHD')"
 }

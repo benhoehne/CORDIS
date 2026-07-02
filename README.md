@@ -4,6 +4,28 @@ A Python tool for querying the [CORDIS Data Extraction REST API](https://cordis.
 
 ---
 
+## 🆕 Heidelberg EU-Projects Database, Delta Updates & Web App
+
+Beyond the API extraction described below, this repo now includes a full
+**SQLite consolidation + delta-update + web/export workflow** for the EU
+projects of Universität Heidelberg (UHEI) and Universitätsklinikum Heidelberg
+(UKHD), combining the CORDIS export with the ERC dashboard dump.
+
+```bash
+pip install -r requirements.txt
+
+python manage.py db build --recreate        # build data/cordis_heidelberg.db
+python manage.py db update  <new_cordis.xlsx>   # idempotent delta update
+python manage.py db update-erc <new_erc.xlsx>   # refresh ERC enrichment
+python manage.py db export --erc-only --year-from 2024 --institution UKHD
+python manage.py web --port 8000            # → http://127.0.0.1:8000
+```
+
+See **[`docs/DATABASE_WORKFLOW.md`](docs/DATABASE_WORKFLOW.md)** for the schema,
+column mappings, ETL pipeline and web-layer architecture.
+
+---
+
 ## Features
 
 - **Async extraction flow** — submits jobs, polls for completion, downloads results automatically

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Heidelberg EU Projects</title>
+  <style>
+    :root {
+      --uhei: #b0182b;      /* Heidelberg red */
+      --ink: #1f2733;
+      --muted: #6b7280;
+      --line: #e4e7ec;
+      --bg: #f7f8fa;
+      --chip: #eef2f7;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Helvetica, Arial, sans-serif; color: var(--ink);
+      background: var(--bg);
+    }
+    header {
+      background: var(--uhei); color: #fff; padding: 14px 22px;
+      display: flex; align-items: baseline; gap: 14px;
+    }
+    header h1 { font-size: 18px; margin: 0; font-weight: 600; }
+    header .sub { font-size: 13px; opacity: .85; }
+    .wrap { padding: 18px 22px; }
+
+    .filters {
+      background: #fff; border: 1px solid var(--line); border-radius: 10px;
+      padding: 14px; display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px 14px; align-items: end;
+    }
+    .filters label { display: block; font-size: 12px; color: var(--muted);
+      margin-bottom: 4px; }
+    .filters input, .filters select {
+      width: 100%; padding: 7px 8px; border: 1px solid var(--line);
+      border-radius: 7px; font-size: 13px; background: #fff;
+    }
+    .filters .check { display: flex; align-items: center; gap: 6px;
+      font-size: 13px; color: var(--ink); }
+    .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    button {
+      border: 0; border-radius: 8px; padding: 8px 14px; font-size: 13px;
+      cursor: pointer; font-weight: 600;
+    }
+    .btn-primary { background: var(--uhei); color: #fff; }
+    .btn-ghost { background: var(--chip); color: var(--ink); }
+    .btn-export { background: #0d7a4a; color: #fff; }
+
+    .meta { display: flex; justify-content: space-between; align-items: center;
+      margin: 16px 2px 8px; font-size: 13px; color: var(--muted); }
+
+    table { width: 100%; border-collapse: collapse; background: #fff;
+      border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+    thead th { text-align: left; font-size: 12px; color: var(--muted);
+      padding: 10px; border-bottom: 1px solid var(--line); white-space: nowrap;
+      cursor: pointer; user-select: none; }
+    tbody td { padding: 9px 10px; border-bottom: 1px solid var(--line);
+      font-size: 13px; vertical-align: top; }
+    tbody tr:hover { background: #fafbfc; cursor: pointer; }
+    .chip { display: inline-block; padding: 1px 7px; border-radius: 999px;
+      font-size: 11px; font-weight: 600; }
+    .chip-erc { background: #fdeaec; color: var(--uhei); }
+    .chip-inst { background: #eaf1fd; color: #1d4ed8; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+    .pager { display: flex; gap: 8px; align-items: center; justify-content: center;
+      margin: 16px 0; }
+    .pager button { background: var(--chip); }
+    .pager button:disabled { opacity: .4; cursor: default; }
+
+    /* Detail modal */
+    .overlay { position: fixed; inset: 0; background: rgba(15,20,30,.45);
+      display: none; align-items: flex-start; justify-content: center;
+      padding: 40px 16px; overflow: auto; }
+    .overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: 12px; max-width: 760px; width: 100%;
+      padding: 22px 24px; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+    .modal h2 { margin: 0 0 2px; font-size: 18px; }
+    .modal .acr { color: var(--muted); font-size: 13px; margin-bottom: 14px; }
+    .kv { display: grid; grid-template-columns: 190px 1fr; gap: 6px 14px;
+      font-size: 13px; }
+    .kv dt { color: var(--muted); }
+    .kv dd { margin: 0; word-break: break-word; }
+    .modal .close { float: right; }
+    a { color: var(--uhei); }
+    .empty { text-align: center; color: var(--muted); padding: 30px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Heidelberg EU Projects</h1>
+    <span class="sub">CORDIS + ERC consolidated · UHEI / UKHD</span>
+  </header>
+
+  <div class="wrap">
+    <!-- ── Filters ─────────────────────────────────────────────────────── -->
+    <div class="filters" id="filters">
+      <div>
+        <label>Free text (title / acronym / keywords)</label>
+        <input id="f-q" type="text" placeholder="e.g. cancer, quantum…" />
+      </div>
+      <div>
+        <label>Year basis</label>
+        <select id="f-year-field">
+          <option value="start_year">Project start year</option>
+          <option value="call_year">Call year</option>
+        </select>
+      </div>
+      <div>
+        <label>Year from</label>
+        <input id="f-year-from" type="number" min="2007" max="2035" placeholder="2014" />
+      </div>
+      <div>
+        <label>Year to</label>
+        <input id="f-year-to" type="number" min="2007" max="2035" placeholder="2026" />
+      </div>
+      <div>
+        <label>Programme</label>
+        <select id="f-programme-label"><option value="">All</option></select>
+      </div>
+      <div>
+        <label>Call / code (free text)</label>
+        <input id="f-programme" type="text" placeholder="e.g. ERC-2024, MSCA-DN" />
+      </div>
+      <div>
+        <label>Institution</label>
+        <select id="f-institution"><option value="">All</option></select>
+      </div>
+      <div>
+        <label>Status</label>
+        <select id="f-status"><option value="">All</option></select>
+      </div>
+      <div>
+        <label>ERC PI / researcher</label>
+        <input id="f-pi" type="text" placeholder="surname…" />
+      </div>
+      <div>
+        <label>ERC panel</label>
+        <select id="f-panel"><option value="">All</option></select>
+      </div>
+      <div class="check">
+        <input id="f-erc-only" type="checkbox" />
+        <label for="f-erc-only" style="margin:0">ERC projects only</label>
+      </div>
+      <div class="actions">
+        <button class="btn-primary" onclick="applyFilters()">Search</button>
+        <button class="btn-ghost" onclick="resetFilters()">Reset</button>
+        <button class="btn-export" onclick="exportXlsx()">⤓ Export .xlsx</button>
+      </div>
+    </div>
+
+    <!-- ── Result meta ─────────────────────────────────────────────────── -->
+    <div class="meta">
+      <span id="count">—</span>
+      <span>
+        Page size:
+        <select id="page-size" onchange="applyFilters()">
+          <option>25</option><option>50</option><option>100</option>
+        </select>
+      </span>
+    </div>
+
+    <!-- ── Table ───────────────────────────────────────────────────────── -->
+    <table>
+      <thead>
+        <tr>
+          <th onclick="setSort('id')">ID</th>
+          <th onclick="setSort('acronym')">Acronym</th>
+          <th>Title</th>
+          <th>Inst.</th>
+          <th>ERC</th>
+          <th onclick="setSort('start_year')">Start</th>
+          <th onclick="setSort('call_year')">Call yr</th>
+          <th>Programme</th>
+          <th>ERC PI</th>
+          <th>Panel</th>
+          <th class="num" onclick="setSort('ec_max_contribution')">EC €</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div id="empty" class="empty" style="display:none">No projects match these filters.</div>
+
+    <!-- ── Pagination ──────────────────────────────────────────────────── -->
+    <div class="pager">
+      <button id="prev" onclick="gotoPage(state.page-1)">‹ Prev</button>
+      <span id="page-info">—</span>
+      <button id="next" onclick="gotoPage(state.page+1)">Next ›</button>
+    </div>
+  </div>
+
+  <!-- ── Detail modal ──────────────────────────────────────────────────── -->
+  <div class="overlay" id="overlay" onclick="if(event.target===this)closeDetail()">
+    <div class="modal">
+      <button class="btn-ghost close" onclick="closeDetail()">Close ✕</button>
+      <h2 id="d-title">—</h2>
+      <div class="acr" id="d-acr"></div>
+      <dl class="kv" id="d-body"></dl>
+    </div>
+  </div>
+
+  <script>
+    const state = { page: 1, sort: "start_year", direction: "desc" };
+
+    // ── Helpers ──────────────────────────────────────────────────────────
+    const $ = (id) => document.getElementById(id);
+    const money = (v) => v == null ? "" :
+      "€" + Number(v).toLocaleString("en-US", { maximumFractionDigits: 0 });
+    const esc = (s) => (s == null ? "" : String(s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"));
+
+    function currentFilters() {
+      return {
+        q: $("f-q").value,
+        year_field: $("f-year-field").value,
+        year_from: $("f-year-from").value,
+        year_to: $("f-year-to").value,
+        programme_label: $("f-programme-label").value,
+        programme: $("f-programme").value,
+        institution: $("f-institution").value,
+        status: $("f-status").value,
+        pi: $("f-pi").value,
+        panel: $("f-panel").value,
+        erc_only: $("f-erc-only").checked ? "1" : "",
+      };
+    }
+
+    function buildQuery(extra = {}) {
+      const params = new URLSearchParams();
+      const f = currentFilters();
+      for (const [k, v] of Object.entries(f)) if (v) params.set(k, v);
+      for (const [k, v] of Object.entries(extra)) if (v != null) params.set(k, v);
+      return params.toString();
+    }
+
+    // ── Facets (dropdowns) ───────────────────────────────────────────────
+    async function loadFacets() {
+      const r = await fetch("/api/facets");
+      const f = await r.json();
+      fill("f-institution", f.institution);
+      fill("f-status", f.status);
+      fill("f-panel", f.erc_panel);
+      fill("f-programme-label", f.programme_label);
+    }
+    function fill(id, values) {
+      const sel = $(id);
+      for (const v of values) {
+        const o = document.createElement("option");
+        o.value = v; o.textContent = v.length > 60 ? v.slice(0, 57) + "…" : v;
+        sel.appendChild(o);
+      }
+    }
+
+    // ── Load table ───────────────────────────────────────────────────────
+    async function load() {
+      const qs = buildQuery({
+        page: state.page,
+        page_size: $("page-size").value,
+        sort: state.sort,
+        direction: state.direction,
+      });
+      const r = await fetch("/api/projects?" + qs);
+      const data = await r.json();
+      render(data);
+    }
+
+    function render(data) {
+      const tbody = $("rows");
+      tbody.innerHTML = "";
+      $("empty").style.display = data.rows.length ? "none" : "block";
+
+      for (const p of data.rows) {
+        const tr = document.createElement("tr");
+        tr.onclick = () => openDetail(p.id);
+        tr.innerHTML = `
+          <td>${p.id}</td>
+          <td><strong>${esc(p.acronym)}</strong></td>
+          <td>${esc((p.title||"").slice(0,90))}</td>
+          <td>${p.institution ? `<span class="chip chip-inst">${esc(p.institution)}</span>` : ""}</td>
+          <td>${p.is_erc ? `<span class="chip chip-erc">ERC</span>` : ""}</td>
+          <td>${p.start_year ?? ""}</td>
+          <td>${p.call_year ?? ""}</td>
+          <td title="${esc(p.programme_code||"")}">${esc(p.programme_label || p.framework_programme || "")}</td>
+          <td>${esc(p.erc_pi || "")}</td>
+          <td>${esc((p.erc_panel||"").split(" - ")[0])}</td>
+          <td class="num">${money(p.ec_max_contribution)}</td>`;
+        tbody.appendChild(tr);
+      }
+
+      $("count").textContent =
+        `${data.total.toLocaleString()} project(s) · sorted by ${state.sort} ${state.direction}`;
+      $("page-info").textContent = `Page ${data.page} / ${data.pages || 1}`;
+      $("prev").disabled = data.page <= 1;
+      $("next").disabled = data.page >= data.pages;
+    }
+
+    // ── Detail modal ─────────────────────────────────────────────────────
+    async function openDetail(id) {
+      const r = await fetch("/api/projects/" + id);
+      if (!r.ok) return;
+      const p = await r.json();
+      $("d-title").textContent = p.title || "(untitled)";
+      $("d-acr").textContent =
+        `${p.acronym || ""} · ID ${p.id}` + (p.is_erc ? " · ERC" : "");
+      const fields = [
+        ["Institution", p.institution], ["Status", p.status],
+        ["Coordinator", p.coordinator_name],
+        ["Start / End", `${p.start_date || ""} → ${p.end_date || ""}`],
+        ["Duration (mo.)", p.duration],
+        ["Programme", p.programme_label],
+        ["Framework", p.framework_programme],
+        ["Programme code", p.programme_code],
+        ["Call", p.call_identifier], ["Call year", p.call_year],
+        ["Topic", p.topic_title],
+        ["Total cost", money(p.total_cost)],
+        ["EC contribution", money(p.ec_max_contribution)],
+        ["ERC PI", p.erc_pi], ["ERC panel", p.erc_panel],
+        ["ERC domain", p.erc_domain], ["ERC grant type", p.erc_grant_type],
+        ["ERC call year", p.erc_call_year],
+        ["ERC EU contribution", money(p.erc_eu_contribution)],
+        ["Organisations", p.org_names],
+        ["Objective", p.objective],
+        ["CORDIS", p.cordis_url
+          ? `<a href="${p.cordis_url}" target="_blank">${p.cordis_url}</a>` : ""],
+      ];
+      $("d-body").innerHTML = fields
+        .filter(([, v]) => v != null && v !== "")
+        .map(([k, v]) => `<dt>${k}</dt><dd>${k === "CORDIS" ? v : esc(v)}</dd>`)
+        .join("");
+      $("overlay").classList.add("open");
+    }
+    function closeDetail() { $("overlay").classList.remove("open"); }
+
+    // ── Controls ─────────────────────────────────────────────────────────
+    function applyFilters() { state.page = 1; load(); }
+    function gotoPage(p) { if (p >= 1) { state.page = p; load(); } }
+    function setSort(col) {
+      if (state.sort === col)
+        state.direction = state.direction === "asc" ? "desc" : "asc";
+      else { state.sort = col; state.direction = "desc"; }
+      load();
+    }
+    function resetFilters() {
+      for (const el of document.querySelectorAll(".filters input"))
+        el.type === "checkbox" ? (el.checked = false) : (el.value = "");
+      for (const el of document.querySelectorAll(".filters select"))
+        el.value = "";
+      applyFilters();
+    }
+    function exportXlsx() {
+      window.location = "/api/export?" + buildQuery();
+    }
+
+    // ── Init ─────────────────────────────────────────────────────────────
+    loadFacets().then(load);
+    $("f-q").addEventListener("keydown", (e) => { if (e.key === "Enter") applyFilters(); });
+  </script>
+</body>
+</html>

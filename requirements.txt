@@ -4,3 +4,6 @@ pandas>=2.2.0
 openpyxl>=3.1.0
 rich>=13.7.0
 click>=8.1.0
+# Web + export layer (Task 3)
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
